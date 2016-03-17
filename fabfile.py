@@ -3,6 +3,8 @@
 
 from fabric.api import *
 from settings import *
+from fabric.contrib import files
+import os
 
 SETTINGS = {
      'host': '18f-hub',
@@ -12,12 +14,26 @@ SETTINGS = {
     'branch': 'master'
 }
 
-env.use_ssh_config = True
+# env.use_ssh_config = True
+
+
+def uptime():
+    """ Show number of active connections on the server """
+    run('uptime')
+
+def remote_info():
+    """ Get name and info of remote host """
+    run('uname -a')
+
+def local_info():
+    """ Get name and info of local host """
+    local('uname -a')
 
 def update_code_from_git():
     """ Download latest version of the code from git """
-    if not files.exists(REMOTE_REPO_DIR):
-        run("git clone %s" % MAIN_GITHUB_REP )
+    if not files.exists(HOME_DIR):
+        with cd(HOME_DIR):
+            run("git clone %s" % MAIN_GITHUB_REP )
     with cd(REMOTE_REPO_DIR):
         run("git pull")
 
@@ -46,24 +62,11 @@ def restart():
     % (REMOTE_REPO_DIR, SETTINGS['port'], SETTINGS['branch'], COMMAND)
   )
 
+def init():
+    """ Init setup of the project """
+    pass
 
 def deploy():
     """ Update the project """
     update_code_from_git()
     update_requirements()
-
-def uptime():
-    """ Show number of active connections on the server """
-    run('uptime')
-
-def remote_info():
-    """ Get name and info of remote host """
-    run('uname -a')
-
-def local_info():
-    """ Get name and info of local host """
-    local('uname -a')
-
-def init():
-    """ Init setup of the project """
-    pass
