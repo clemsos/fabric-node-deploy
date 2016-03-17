@@ -6,16 +6,9 @@ from settings import *
 from fabric.contrib import files
 import os
 
-SETTINGS = {
-     'host': '18f-hub',
-    'port': env.port,
-    'home': HOME_DIR,
-    'log': os.path.join(LOG_DIR, 'build.log'),
-    'branch': 'master'
-}
 
-# env.use_ssh_config = True
-
+OUT_LOG_FILE = os.path.join(LOG_DIR, 'out.log')
+ERROR_LOG_FILE = os.path.join(LOG_DIR, 'error.log')
 
 def uptime():
     """ Show number of active connections on the server """
@@ -29,9 +22,15 @@ def local_info():
     """ Get name and info of local host """
     local('uname -a')
 
+def create_dirs():
+    """ Create directory to store logs, PID, etc """
+    run("mkdir -p %s"%RUN_DIR)
+    run("mkdir -p %s"%LOG_DIR)
+
+
 def update_code_from_git():
     """ Download latest version of the code from git """
-    if not files.exists(HOME_DIR):
+    if not files.exists(REMOTE_REPO_DIR):
         with cd(HOME_DIR):
             run("git clone %s" % MAIN_GITHUB_REP )
     with cd(REMOTE_REPO_DIR):
@@ -45,22 +44,25 @@ def update_requirements():
         run(' '.join(cmd))
 
 def start():
-  fabric.api.run(
-    "cd %s && forever start -l %s -a deploy/hookshot.js -p %i -b %s -c \"%s\""
-    % (REMOTE_REPO_DIR, LOG, SETTINGS['port'], SETTINGS['branch'], COMMAND)
-  )
+    with cd(REMOTE_REPO_DIR):
+        cmd = "export PORT=%s && forever start -o %s -e %s -a index.js -p %s"%( APP_PORT, OUT_LOG_FILE, ERROR_LOG_FILE, RUN_DIR)
+        run(cmd)
 
 def stop():
-  fabric.api.run(
-    "cd %s && forever stop deploy/hookshot.js -p %i -b %s -c \"%s\""
-    % (REMOTE_REPO_DIR, SETTINGS['port'], SETTINGS['branch'], COMMAND)
-  )
+    with cd(REMOTE_REPO_DIR):
+        cmd = "forever stop -l %s -a index.js -p %s"%(APP_PORT, RUN_DIR)
+        run(cmd)
 
 def restart():
-  fabric.api.run(
-    "cd %s && forever restart deploy/hookshot.js -p %i -b %s -c \"%s\""
-    % (REMOTE_REPO_DIR, SETTINGS['port'], SETTINGS['branch'], COMMAND)
-  )
+    with cd(REMOTE_REPO_DIR):
+        cmd = "forever restart -l %s -a index.js -p %s"%(APP_PORT, RUN_DIR)
+        run(cmd)
+
+def error_log():
+    run("tail -200 %s"%ERROR_LOG_FILE)
+
+def out_log():
+    run("tail -200 %s"%OUT_LOG_FILE)
 
 def init():
     """ Init setup of the project """
@@ -68,5 +70,7 @@ def init():
 
 def deploy():
     """ Update the project """
+    create_dirs()
     update_code_from_git()
     update_requirements()
+    restart()

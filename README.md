@@ -16,3 +16,9 @@ Deploy your app
 
     fab list
     fab prod deploy
+
+
+Check logs
+
+  fab prod error_log
+  fab prod out_log
