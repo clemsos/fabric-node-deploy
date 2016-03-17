@@ -2,15 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import os
-from fabric.api import *
+from fabric.api import env
 
 HOME_DIR = "/home/erasme/www/evolyon"
-MAIN_GITHUB_REP = "https://github.com/eramse/evolyon.git"
-APP_NAME = "evolyon"
-
-LOG_DIR=os.path.join("/var/log/", APP_NAME)
-CODE_DIR=os.path.join(HOME_DIR, APP_NAME)
-REMOTE_REPO_DIR = os.path.join(HOME_DIR, APP_NAME)
+MAIN_GITHUB_REP = "https://github.com/erasme/evolyon.git"
+APP_NAME =  "evolyon"
+APP_PORT = 3000
 
 def staging():
     """ Staging server credentials """
@@ -22,8 +19,6 @@ def staging():
 
 def prod():
     """ Staging server credentials """
-    env.hosts = ['127.0.0.1']
-    env.user  = 'clemsos'
-    env.remote_admin  = 'root'
-    env.port="2022"
-    env.mongo_user = "root"
+    env.hosts = ['lab.erasme.org']
+    env.user  = 'erasme'
+    env.port = "22" # ssh port

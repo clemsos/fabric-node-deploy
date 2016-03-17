@@ -2,11 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from fabric.api import *
-from settings import *
 from fabric.contrib import files
 import os
 
+from settings import *
 
+# create
+RUN_DIR=os.path.join(HOME_DIR, "run")
+LOG_DIR=os.path.join(HOME_DIR, "log")
+REMOTE_REPO_DIR = os.path.join(HOME_DIR, APP_NAME)
 OUT_LOG_FILE = os.path.join(LOG_DIR, 'out.log')
 ERROR_LOG_FILE = os.path.join(LOG_DIR, 'error.log')
 
@@ -26,7 +30,6 @@ def create_dirs():
     """ Create directory to store logs, PID, etc """
     run("mkdir -p %s"%RUN_DIR)
     run("mkdir -p %s"%LOG_DIR)
-
 
 def update_code_from_git():
     """ Download latest version of the code from git """
